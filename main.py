@@ -30,6 +30,7 @@ def train(net, epoch, learning_rate, batch=0, input_vars):
 
 if batch:
 #do later
+  print("debug")
 else:
   x = Variable(torch.from_numpy(input_vars[0]).to(torch.float32)
   target = Variable(torch.from_numpy(input_vars[2]).to(torch.float32)
