@@ -27,27 +27,41 @@ def loss_BVAE(y, target, mu, sigma, beta):
 
 def train(net, epoch, learning_rate, input_vars): 
   optimizer = optim.SGD(model.parameters(), lr=learning_rate)
-
-if batch:
-#do later
-  print("debug")
-else:
-  x = Variable(torch.from_numpy(input_vars[0]).to(torch.float32))
-  target = Variable(torch.from_numpy(input_vars[2]).to(torch.float32))
-  q = Variable(torch.from_numpy(input_vars[1]).to(torch.float32))
-  
-  for i in range(epoch):
-    out, mu, sigma = net(x)
-    loss = loss_BVAE(out, target, mu, sigma)
-    optimizer.zero_grad()
-    loss.backwards()
-    optimizer.step()
-    if (e + 1) % 20 == 0:
-      print(loss)
+  if batch:
+  #do later
+    print("debug")
+  else:
+    x = Variable(torch.from_numpy(input_vars[0]).to(torch.float32))
+    target = Variable(torch.from_numpy(input_vars[1][1]).to(torch.float32))
+    q = Variable(torch.from_numpy(input_vars[1][0]).to(torch.float32))
+    
+    for i in range(epoch):
+      out, mu, sigma = net(x)
+      loss = loss_BVAE(out, target, mu, sigma)
+      optimizer.zero_grad()
+      loss.backwards()
+      optimizer.step()
+      if (e + 1) % 20 == 0:
+        print(loss)
 
 
 
 def main():
+  data = []
+  for i in range(10000):
+    if (i % 100) == 0:
+        print(i)
+    batch = []
+    Gamma = random.uniform(0.5,1)
+    Omega = random.uniform(5,10)
+    Alpha = random.uniform(5,10)
+    print(Gamma, Omega, Alpha)
+    damped_oscillator = oscillator(Gamma, 1, Omega, Alpha, 10, 100)
+    damped_oscillator.iterate()
+    batch = damped_oscillator.y_points[0:50]
+    question = random.randint(0,100)
+    data.append([batch,[damped_oscillator.x_points[question],damped_oscillator.y_points[question]]])
+  data = np.array(data)
 
   #Import HyperParams from json
   with open('params.json') as json_data:

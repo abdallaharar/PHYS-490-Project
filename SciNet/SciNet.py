@@ -36,18 +36,18 @@ class SciNet(nn.module):
     self.question = kargs['question']
 
     self.encode = nn.Sequential() 
-    self.encode.add(nn.Linear(krags['observation_size', kargs['encode_h1']))
+    self.encode.add(nn.Linear(krags['observation_size', kargs['encode_h1']]))
     self.encode.add(func.ELU())
     self.encode.add(nn.Linear(kargs['encode_h1'], kargs['encode_h2']))
     self.encode.add(func.ELU())
     self.encode.add(nn.Linear(kargs['encode_h2'], self.n_latent*2)
     
     self.decode = nn.Sequential()
-    self.encode.add(nn.Linear(krags['decoder_input', kargs['decode_h1']))
-    self.encode.add(func.ELU())
-    self.encode.add(nn.Linear(kargs['decode_h1'], kargs['decode_h2']))
-    self.encode.add(func.ELU())
-    self.encode.add(nn.Linear(kargs['decode_h2'], kargs['output_size'])
+    self.decode.add(nn.Linear(krags['decoder_input', kargs['decode_h1']))
+    self.decode.add(func.ELU())
+    self.decode.add(nn.Linear(kargs['decode_h1'], kargs['decode_h2']))
+    self.decode.add(func.ELU())
+    self.decode.add(nn.Linear(kargs['decode_h2'], kargs['output_size'])
     
   def _encode(self, x):
     return self.encode(x) 
