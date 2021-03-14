@@ -2,14 +2,15 @@ import json, argparse, torch, sys
 import torch.optim as optim
 import matplotlib.pyplot as plt
 import seaborn as sns
-sys.path.append('../SciNet')
 import torch
 import torch.nn as nn
 import numpy as np
-import Scinet
 import json
 import random
 
+sys.path.append('../SciNet')
+from SciNet import SciNet
+sys.path.append('../Damped Oscillator')
 from generator import oscillator
 
 def kl_div(mu, sigma, beta):
