@@ -28,7 +28,7 @@ class Decoder(nn.module):
     x = func.ELU(self.fc3(x)
     return x'''
 
-class SciNet(nn.module):
+class SciNet(nn.Module):
   def __init__(self, **kargs):
     super(SciNet,  self).__init__()
 
@@ -36,18 +36,18 @@ class SciNet(nn.module):
     self.question = kargs['question']
 
     self.encode = nn.Sequential() 
-    self.encode.add(nn.Linear(krags['observation_size', kargs['encode_h1']]))
+    self.encode.add(nn.Linear(kargs['observation_size', kargs['encode_h1']]))
     self.encode.add(func.ELU())
     self.encode.add(nn.Linear(kargs['encode_h1'], kargs['encode_h2']))
     self.encode.add(func.ELU())
-    self.encode.add(nn.Linear(kargs['encode_h2'], self.n_latent*2)
+    self.encode.add(nn.Linear(kargs['encode_h2'], self.n_latent*2))
     
     self.decode = nn.Sequential()
-    self.decode.add(nn.Linear(krags['decoder_input', kargs['decode_h1']))
+    self.decode.add(nn.Linear(kargs['decoder_input', kargs['decode_h1']]))
     self.decode.add(func.ELU())
     self.decode.add(nn.Linear(kargs['decode_h1'], kargs['decode_h2']))
     self.decode.add(func.ELU())
-    self.decode.add(nn.Linear(kargs['decode_h2'], kargs['output_size'])
+    self.decode.add(nn.Linear(kargs['decode_h2'], kargs['output_size']))
     
   def _encode(self, x):
     return self.encode(x) 
@@ -58,8 +58,8 @@ class SciNet(nn.module):
   def forward(self, x):
     dist = self._encode(x)
 
-    mu = [:, :n_latent]
-    sigma = [:, n_latent:]
+    mu = dist[:, :n_latent]
+    sigma = dist[:, n_latent:]
     std_ = sigma.divid(2).exp()
     eps = torch.normal(mean=0, std=std_)
     z = mu = std_*eps
@@ -67,6 +67,5 @@ class SciNet(nn.module):
     z = torch.cat((z, self.question), 0)
 
     x_ = self._decode(z)
-    
-  return x_, mu, sigma
+    return x_, mu, sigma
 
