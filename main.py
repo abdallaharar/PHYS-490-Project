@@ -3,8 +3,6 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 import seaborn as sns
 sys.path.append('../SciNet')
-from SciNet import SciNet
-import generator
 import torch
 import torch.nn as nn
 import numpy as np
@@ -12,7 +10,7 @@ import Scinet
 import json
 import random
 
-
+from generator import oscillator
 
 def kl_div(mu, sigma, beta):
   kld = sigma.pow(2).log - mu.pow(2) - sigma.pow(2) 
@@ -79,7 +77,7 @@ def main():
 
   #Loss and optimizer
   #loss = loss_BVAE()
- 
+  train(model, num_epochs,learning_rate, data)
 
 if __name__ == '__main__':
   main()
