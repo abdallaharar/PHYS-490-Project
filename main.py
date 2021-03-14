@@ -25,16 +25,16 @@ def loss_BVAE(y, target, mu, sigma, beta):
   return mseloss + kld_loss
 
 
-def train(net, epoch, learning_rate, batch=0, input_vars): 
+def train(net, epoch, learning_rate, input_vars): 
   optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
 if batch:
 #do later
   print("debug")
 else:
-  x = Variable(torch.from_numpy(input_vars[0]).to(torch.float32)
-  target = Variable(torch.from_numpy(input_vars[2]).to(torch.float32)
-  q = Variable(torch.from_numpy(input_vars[1]).to(torch.float32)
+  x = Variable(torch.from_numpy(input_vars[0]).to(torch.float32))
+  target = Variable(torch.from_numpy(input_vars[2]).to(torch.float32))
+  q = Variable(torch.from_numpy(input_vars[1]).to(torch.float32))
   
   for i in range(epoch):
     out, mu, sigma = net(x)
@@ -55,10 +55,10 @@ def main():
     json_data.close()
     learning_rate = d['learning rate']
     num_epochs = d['num epochs']
-    beta = = d['beta']
+    beta = d['beta']
 
   #Specifies to run on GPU if possible
-   device = torch.device('cuda' if torch.cuda.is.available() else 'cpu')
+  device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
   
   #Initializing the network
   model = Scinet(observation_size = 50,encode_h1 = 500,encode_h2 = 100,decoder_input = 100, decode_h1 = 100, decode_h2 = 50,output_size = 1).to(device)
