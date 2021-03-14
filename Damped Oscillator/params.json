@@ -1,0 +1,10 @@
+{
+  "model":{
+    "learning rate": 0.01,
+    "num epochs": 420,
+
+  },
+  "data":{
+    
+  }
+}
