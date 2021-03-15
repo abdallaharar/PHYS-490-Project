@@ -1,0 +1,8 @@
+{
+
+    "learning rate": 10e-3,
+    "num epochs": 1000,
+    "beta": 10e-3
+    
+
+}

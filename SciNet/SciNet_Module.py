@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as func
-
+from torch.autograd import Variable
 '''class Encode(nn.module):
   def __init__(self, **kargs):
     super(Scinet,  self).__init__()
@@ -33,21 +33,20 @@ class SciNet(nn.Module):
     super(SciNet,  self).__init__()
 
     self.n_latent = kargs['n_latent_var']
-    self.question = kargs['question']
-
-    self.encode = nn.Sequential() 
-    self.encode.add(nn.Linear(kargs['observation_size', kargs['encode_h1']]))
-    self.encode.add(func.ELU())
-    self.encode.add(nn.Linear(kargs['encode_h1'], kargs['encode_h2']))
-    self.encode.add(func.ELU())
-    self.encode.add(nn.Linear(kargs['encode_h2'], self.n_latent*2))
     
-    self.decode = nn.Sequential()
-    self.decode.add(nn.Linear(kargs['decoder_input', kargs['decode_h1']]))
-    self.decode.add(func.ELU())
-    self.decode.add(nn.Linear(kargs['decode_h1'], kargs['decode_h2']))
-    self.decode.add(func.ELU())
-    self.decode.add(nn.Linear(kargs['decode_h2'], kargs['output_size']))
+
+    self.encode = nn.Sequential(nn.Linear(kargs['observation_size'],
+                                          kargs['encode_h1']), nn.ELU(),
+                                nn.Linear(kargs['encode_h1'],
+                                          kargs['encode_h2']), nn.ELU(),
+                                nn.Linear(kargs['encode_h2'], self.n_latent*2))
+    
+    self.decode = nn.Sequential(nn.Linear(kargs['decoder_input'],
+                                          kargs['decode_h1']),nn.ELU(),
+                                nn.Linear(kargs['decode_h1'],
+                                          kargs['decode_h2']),nn.ELU(),
+                                nn.Linear(kargs['decode_h2'],
+                                          kargs['output_size']))
     
   def _encode(self, x):
     return self.encode(x) 
@@ -55,16 +54,18 @@ class SciNet(nn.Module):
   def _decode(self, x):
     return self.decode(x)
 
-  def forward(self, x):
+  def forward(self, x, q):
     dist = self._encode(x)
 
-    mu = dist[:, :n_latent]
-    sigma = dist[:, n_latent:]
-    std_ = sigma.divid(2).exp()
+    
+    mu = dist[:, :self.n_latent]
+    sigma = dist[:, self.n_latent:]
+    std_ = torch.div(sigma, 2).exp()
     eps = torch.normal(mean=0, std=std_)
     z = mu = std_*eps
+    
 
-    z = torch.cat((z, self.question), 0)
+    z = torch.cat((z, q), 1)
 
     x_ = self._decode(z)
     return x_, mu, sigma
