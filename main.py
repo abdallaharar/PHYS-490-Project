@@ -79,15 +79,17 @@ def main():
   q = np.zeros(samples)
   target = np.zeros(samples)
   for i in range(samples):
-    #if (i % 100) == 0:
-        #print(i)
+    if (i % 100) == 0:
+        print(i)
     batch = []
     Gamma = random.uniform(0.5,1)
     Omega = random.uniform(5,10)
     Alpha = random.uniform(5,10)
+    Velocity = random.uniform(-1,1)
     #print(Gamma, Omega, Alpha)
-    damped_oscillator = oscillator(Gamma, 1, Omega, Alpha, 10, 100)
-    damped_oscillator.iterate()
+    damped_oscillator = oscillator(Gamma, 1, Omega, Alpha, 10, Velocity, 100)
+    mylist = [damped_oscillator.iterate_critically,damped_oscillator.iterate_underdamped]
+    random.choice(mylist)()
     data[:,i] = np.array(damped_oscillator.y_points[0:50])
     question = random.randint(0,100)
     q[i] = damped_oscillator.x_points[question]
