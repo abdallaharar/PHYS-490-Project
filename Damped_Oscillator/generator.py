@@ -23,16 +23,7 @@ class oscillator:
             self.x_points.append(i)
             self.y_points.append(x/self.a)
             i += self.time/self.iterations
-    def show_underdamped(self):
-        print("debug1")
-        self.iterate_underdamped()
-        plt.plot(damped_oscillator.x_points[1:], damped_oscillator.y_points[1:])
-        plt.plot(damped_oscillator.x_points[0:1], damped_oscillator.y_points[0:1])  
-        plt.title("Underdamped Spring")
-        plt.xlabel("time (seconds)")
-        plt.ylabel(r"$\frac{X}{X_0}$")
-        plt.show()  
-    
+            
     def iterate_critically(self):
         i = 0;
         while i < self.time:
@@ -40,8 +31,21 @@ class oscillator:
             self.x_points.append(i)
             self.y_points.append(x/self.a)
             i += self.time/self.iterations
+            
+''' def show_underdamped(self):
+        print("debug1")
+        self.iterate_underdamped()
+        plt.plot(damped_oscillator.x_points[1:], damped_oscillator.y_points[1:])
+        plt.plot(damped_oscillator.x_points[0:1], damped_oscillator.y_points[0:1])  
+        plt.title("Underdamped Spring")
+        plt.xlabel("time (seconds)")
+        plt.ylabel(r"$\frac{X}{X_0}$")
+        plt.show()
+'''
 
-    def show_critically(self):
+
+
+'''  def show_critically(self):
         print("debug")
         self.iterate_critically()
         plt.plot(damped_oscillator.x_points[1:], damped_oscillator.y_points[1:])
@@ -49,11 +53,11 @@ class oscillator:
         plt.title("Critically Damped Spring")
         plt.xlabel("time (seconds)")
         plt.ylabel(r"$\frac{X}{X_0}$")
-        plt.show()  
+        plt.show()  '''
 
 #Oscillator(Gamma Value (dampenning), A (maximum) value, Omega Value, Alpha Value, Time scale, Initial velocity, Iterations to plot)
 
-if __name__ == __main__:
+'''if __name__ == "__main__":
     data = []
     for i in range(5):
         Omega = random.uniform(5,10)
@@ -73,4 +77,4 @@ if __name__ == __main__:
         data.append([batch,[damped_oscillator.x_points[question],damped_oscillator.y_points[question]]])
         
     with open('data.json', 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+        json.dump(data, f, ensure_ascii=False, indent=4)'''
