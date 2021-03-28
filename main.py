@@ -18,7 +18,7 @@ from generator import oscillator
 
 def kl_div(mu, sigma):
   kld = torch.log(sigma.pow(2)) - mu.pow(2) - sigma.pow(2) 
-  return 1/2 * kld.mean()
+  return 1/2 * kld.sum(dim=1).mean()
 
 
 def loss_BVAE(y, target, mu, sigma): 
@@ -51,9 +51,12 @@ def train(net, epoch, learning_rate, beta, data, question, target, batch):
       optimizer.zero_grad()
       net.zero_grad()
       
+      #print(mu.size())
+      
+      
       #print(Mseloss)
       #print(kldloss)
-      
+  
       loss = Mseloss - beta*kldloss
 
  
