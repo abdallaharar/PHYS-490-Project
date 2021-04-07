@@ -152,9 +152,9 @@ def main():
     plt.title("Output Confirmation Plot")
     plt.plot(damped_oscillator.x_points,damped_oscillator.y_points, color = 'blue')
     print(q,out[0][0])
-    plt.plot(q,out[0][0], color = 'red')
+    plt.scatter(q,out[0][0], color = 'red')
     print(q,target)
-    plt.plot(q,target, color = 'black')
+    plt.scatter(q,target, color = 'black')
     plt.show()
 
 
