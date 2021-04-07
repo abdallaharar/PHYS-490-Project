@@ -10,6 +10,8 @@ import random
 
 
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+y_list = []
 
 sys.path.append('.//SciNet')
 from SciNet_Module import SciNet
@@ -36,9 +38,9 @@ def train(net, epoch, learning_rate, beta, data, question, target, batch):
     print("debug")
   else:
 
-    x = Variable(torch.from_numpy(data).to(torch.float32))
-    target =  Variable(torch.from_numpy(target)).to(torch.float32)
-    q = Variable(torch.from_numpy(question)).to(torch.float32)
+    x = Variable(torch.from_numpy(data).to(device,torch.float32))
+    target =  Variable(torch.from_numpy(target)).to(device,torch.float32)
+    q = Variable(torch.from_numpy(question)).to(device,torch.float32)
     x =x.reshape(-1,50)
     q =q.reshape(-1,1)
     target = target.reshape(-1,1)
@@ -65,9 +67,11 @@ def train(net, epoch, learning_rate, beta, data, question, target, batch):
     
       optimizer.step()
       if (i + 1) % 50 == 0:
+        print(i)
         print(kldloss)
         print(Mseloss)
         print(loss)
+      y_list.append(loss)
 
 
     print(out[0])
@@ -109,7 +113,7 @@ def main():
 
   #Specifies to run on GPU if possible
   #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-  device = torch.device('cpu')
+  #device = torch.device('cpu')
   #Initializing the network
   model = SciNet(observation_size=50, encode_h1=500, encode_h2=100, 
                  decoder_input=(1+3), decode_h1=100, decode_h2=50, 
@@ -119,6 +123,41 @@ def main():
   #loss = loss_BVAE()
   
   train(model, num_epochs,learning_rate, beta, data, q, target, 0)
+  plt.clf
+  plt.cla
+  x_list = [i for i in range(0,len(y_list))]
+  plt.plot(x_list,y_list)
+  plt.show()
+  for i in range(1):
+    Gamma = random.uniform(0.5,1)
+    Omega = random.uniform(5,10)
+    Alpha = random.uniform(5,10)
+    Velocity = random.uniform(-1,1)
+    damped_oscillator = oscillator(Gamma, 1, Omega, Alpha, 10, Velocity, 100)
+    damped_oscillator.iterate_underdamped()
+    question = random.randint(0,100)
+    newdata = np.array(damped_oscillator.y_points[0:50])
+    q = damped_oscillator.x_points[question]
+    target = damped_oscillator.y_points[question]
+    newx = Variable(torch.from_numpy(newdata).to(device,dtype=torch.float32))
+    values = np.array([target])
+    values =  Variable(torch.from_numpy(values)).to(device,dtype=torch.float32)
+    newx = newx.reshape(-1,50)
+    values =values.reshape(-1,1)
+    out, mu, sigma = model(newx,values)
+    out = out.cpu()
+    out = out.detach().numpy()
+    plt.clf
+    plt.cla
+    plt.title("Output Confirmation Plot")
+    plt.plot(damped_oscillator.x_points,damped_oscillator.y_points, color = 'blue')
+    print(q,out[0][0])
+    plt.plot(q,out[0][0], color = 'red')
+    print(q,target)
+    plt.plot(q,target, color = 'black')
+    plt.show()
+
+
 
 if __name__ == '__main__':
   main()
