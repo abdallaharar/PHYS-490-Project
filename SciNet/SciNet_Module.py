@@ -54,7 +54,7 @@ class SciNet(nn.Module):
   def _decode(self, x):
     return self.decode(x)
 
-  def forward(self, x, q):
+  def forward(self, x, q, output=0):
     dist = self._encode(x)
 
     
@@ -62,11 +62,19 @@ class SciNet(nn.Module):
     sigma = dist[:, self.n_latent:]
     std_ = torch.div(sigma, 2).exp()
     eps = torch.normal(mean=0, std=std_)
-    z = mu = std_*eps
-    
+    z = mu + std_*eps
+     
+    if(output):
+        latent_out = z
+        
 
     z = torch.cat((z, q), 1)
 
+
     x_ = self._decode(z)
-    return x_, mu, sigma
+    
+    if(output):
+        return x_, mu, sigma, latent_out
+    else:
+        return x_, mu, sigma
 
