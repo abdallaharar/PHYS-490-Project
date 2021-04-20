@@ -47,8 +47,9 @@ class SciNet(nn.Module):
 
     if (output):
         latent_out = z
-        
-    #q = q.reshape(-1, 1)
+    try: q.shape[1] 
+    except: q = q.reshape(-1, 1)
+    
     z = torch.cat((z, q), -1)
     out = self._decode(z)
 
