@@ -1,0 +1,11 @@
+{
+
+    "learning rate1": 1e-3,
+    "learning rate2": 1e-4,
+    "num epochs1": 250,
+    "num epochs2": 50,
+    "beta": 1e-4,
+    "latent max": 9
+    
+
+}
