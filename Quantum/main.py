@@ -125,7 +125,7 @@ def train(net, epoch, learning_rate, beta, data, question, target, err,batch=0):
           #print(kldloss)
           #print(Mseloss)
           print(loss)
-        err.append(loss)
+        err.append(loss.cpu().numpy())
         
         
 def test(model, test_set):
@@ -157,10 +157,10 @@ def test(model, test_set):
 def main():
     
       
-    samples = 95000
+    samples = 95
     n_observation= 10
     n_questions = 10
-    test_samples= 5000
+    test_samples= 50
     a, b, c = create_data(1, n_observation, n_questions, samples)
     
     
