@@ -11,7 +11,6 @@ class SciNet(nn.Module):
 
     self.n_latent = kargs['n_latent_var']
     
-
     self.encode = nn.Sequential(nn.Linear(kargs['observation_size'],
                                           kargs['encode_h1'],bias=False), nn.ELU(),
                                 nn.Linear(kargs['encode_h1'],
@@ -26,50 +25,34 @@ class SciNet(nn.Module):
                                 nn.Linear(kargs['decode_h2'],
                                           kargs['output_size']))
     
-
-    
   def _encode(self, x):
     return self.encode(x) 
 
   def _decode(self, x):
     return self.decode(x)
 
-    
   def reparam(self, mu, logsigma):
     
-    std = torch.exp(0.5*logsigma)
+    std = torch.exp(0.5 * logsigma)
     eps = torch.randn_like(std) 
     sample = mu + (eps * std) 
     
     return sample
 
-
-  def forward(self, x, q, output=0):
+  def forward(self, x, q, output = 0):
     dist = self._encode(x)
-
-    
     mu = dist[:, :self.n_latent]
     sigma = dist[:, self.n_latent:]
-    
     z = self.reparam(mu, sigma)
-    
-    
-     
-    if(output):
+
+    if (output):
         latent_out = z
         
-        
-    q = q.reshape(-1,1)
-        
+    q = q.reshape(-1, 1)
     z = torch.cat((z, q), -1)
-
-
     out = self._decode(z)
-  
-    
 
-    
-    if(output):
+    if (output):
         return out, mu, sigma, latent_out
     else:
         return out, mu, sigma

@@ -16,21 +16,21 @@ class oscillator:
         self.y_points = []
     
     def iterate_underdamped(self):
-        omega_1 = (self.omega**2 - self.gamma**2)**(1/2)
-        i = 0;
+        omega_1 = (self.omega ** 2 - self.gamma ** 2) ** (1/2)
+        i = 0
         while i < self.time:
-            x = math.e**(-self.gamma*i)*self.a*math.cos(omega_1*i)
+            x = math.e ** (-self.gamma * i) * self.a * math.cos(omega_1 * i)
             self.x_points.append(i)
-            self.y_points.append(x/self.a)
-            i += self.time/self.iterations
+            self.y_points.append(x / self.a)
+            i += self.time / self.iterations
             
     def iterate_critically(self):
-        i = 0;
+        i = 0
         while i < self.time:
-            x = math.e**(-self.gamma*i)*(self.a + (self.velocity + self.gamma*self.a)*i)
+            x = math.e ** (-self.gamma * i) * (self.a + (self.velocity + self.gamma * self.a) * i)
             self.x_points.append(i)
-            self.y_points.append(x/self.a)
-            i += self.time/self.iterations
+            self.y_points.append(x / self.a)
+            i += self.time / self.iterations
             
 ''' def show_underdamped(self):
         print("debug1")
