@@ -69,7 +69,7 @@ def train(net, epoch, learning_rate, beta, data, question, target, batch = 0):
                 optimizer.step()
                 
             if (j + 1) % 50 == 0:
-                print(j)
+                print(j + 1)
                 #print(kldloss)
                 #print(Mseloss)
                 #print(loss)
@@ -100,18 +100,19 @@ def train(net, epoch, learning_rate, beta, data, question, target, batch = 0):
         y_list.append(loss)
 
 def main():
-    samples = 950000
+    samples = 95000
     data = np.zeros((50, samples))
     q = np.zeros(samples)
     target = np.zeros(samples)
+    print("Generating Samples")
     for i in range(samples):
-      if (i % 50) == 0:
-        print(i,"out of: ", samples)
+      if ((i+1) % 5000) == 0:
+        print(i+1,"out of: ", samples)
       
       Gamma = random.uniform(0.5, 1)
       Omega = random.uniform(5, 10)
-      Alpha = random.uniform(5, 10)
-      Velocity = random.uniform(-1, 1)
+      #Velocity = random.uniform(-1, 1)
+      Velocity = 0
       #print(Gamma, Omega, Alpha)
       damped_oscillator = oscillator(Gamma, 1, Omega, 0, 10, Velocity, 100)
       damped_oscillator.iterate_underdamped()
@@ -134,14 +135,15 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     #device = torch.device('cpu')
     #Initializing the network
-    model = SciNet(observation_size = 50, encode_h1 = 500, encode_h2 = 100, 
-                  decoder_input = (1 + 3), decode_h1 = 100, decode_h2 = 100, 
+    model = SciNet(observation_size = 50, encode_h1 = 500, encode_h2 = 250, 
+                  decoder_input = (1 + 3), decode_h1 = 250, decode_h2 = 100, 
                   output_size = 1, n_latent_var = 3).to(device)
     
     #Loss and optimizer
     #loss = loss_BVAE()
     
-    train(model, num_epochs,learning_rate, beta, data, q, target, 5120)
+    print("Training Net")
+    train(model, num_epochs,learning_rate, beta, data, q, target, 512)
     plt.clf
     plt.cla
     x_list = [i for i in range(0,len(y_list))]
@@ -154,89 +156,133 @@ def main():
     testloss = 0
     output= np.zeros(100)
 
+    print("Creating Verification Plot")
+    for j in range(3):
+      Gamma = random.uniform(0.5,1)
+      Omega = random.uniform(5,10)
+      #Velocity = random.uniform(-1,1)
+      Velocity = 0
+      damped_oscillator = oscillator(Gamma, 1, Omega, 0, 10, Velocity, 100)
+      damped_oscillator.iterate_underdamped()
+      question = random.randint(0,100)
+      #question = 
+      newdata = np.array(damped_oscillator.y_points[0:50])
+
+      q = np.array(damped_oscillator.x_points[0:100])
+      target = damped_oscillator.y_points[50:100]
+      newx = Variable(torch.from_numpy(newdata).to(device,dtype=torch.float32))
+      values = np.array([target])
+      values =  Variable(torch.from_numpy(values)).to(device,dtype=torch.float32)
+      q = Variable(torch.from_numpy(q)).to(device,torch.float32)
+
+      newx = newx.reshape(-1,50)
+      values =values.reshape(-1,50)
+      q = q.reshape(-1,1)
+      for i in range(100):
+
+          #print(q.shape)
+
+          out, mu, sigma, _ = model(newx,q[i], 1)
+          out = out.cpu()
+          out = out.detach().numpy()
+
+          output[i] = out[0][0]
+
+          # print(out)
+          # print(np.mean(newdata))
+          # #print(mu)
+          # #print(Gamma)
+          # #print(Omega)
+
+      q =q.cpu().detach().numpy()
+
+
+      plt.clf
+      plt.cla
+      plt.title("Output Confirmation Plot")
+      plt.plot(damped_oscillator.x_points,damped_oscillator.y_points, color = 'blue')
+      #print(q,output)
+      plt.plot(q,output, 'r--')
+
+       # plt.scatter(q,target, color = 'black')
+      plt.show()
+    
+    
     Gamma_list = []
     Velocity_list = []
-    latent_out_1 = []
-    latent_out_2 = []
-    latent_out_3 = []
-    k_values = []
-    w_values = []
+    latent_out_1 = np.zeros((100,100))
+    latent_out_2 = np.zeros((100,100))
+    latent_out_3 = np.zeros((100,100))
+    k_values = np.linspace(0.5,1,100)
+    w_values = np.linspace(5,10,100)
+    print("starting 3d scatter splot")
+    for k in range(100):
+      for j in range(100):
+          if (j+1%50 == 0):
+            print(j,"/",samples)
+          Gamma = k_values[k]
+          Omega = w_values[j]
+          #Velocity = random.uniform(-1, 1)
+          Velocity = 0
+          damped_oscillator = oscillator(Gamma, 1, Omega, 0, 10, Velocity, 100)
+          damped_oscillator.iterate_underdamped()
+          question = 50
+          newdata = np.array(damped_oscillator.y_points[0:50])         
+          q = np.array(damped_oscillator.x_points[question])
+          target = damped_oscillator.y_points[question]
+          newx = Variable(torch.from_numpy(newdata).to(device,dtype = torch.float32))
+          values = np.array([target])
+          values =  Variable(torch.from_numpy(values)).to(device,dtype = torch.float32)
+          q = Variable(torch.from_numpy(q)).to(device,torch.float32)
+          
+          newx = newx.reshape(-1, 50)
+          values =values.reshape(-1, 1)
+          q = q.reshape(-1, 1)
+          out, mu, sigma, latent_out = model(newx, q, 1)
+          
+          latent_out_1[k,j] = latent_out[0][0].item()
+          latent_out_2[k,j] = latent_out[0][1].item()
+          latent_out_3[k,j] = latent_out[0][2].item()  
 
-    for j in range(100):
-        Gamma = random.uniform(0.5, 1)
-        Omega = random.uniform(5, 10)
-        Alpha = random.uniform(5, 10)
-        Velocity = random.uniform(-1, 1)
-        damped_oscillator = oscillator(Gamma, 1, Omega, 0, 10, Velocity, 100)
-        damped_oscillator.iterate_underdamped()
-        question = random.randint(0, 100)
-        newdata = np.array(damped_oscillator.y_points[0:50])
-        
-        q = np.array(damped_oscillator.x_points[0:100])
-        target = damped_oscillator.y_points[50:100]
-        newx = Variable(torch.from_numpy(newdata).to(device,dtype = torch.float32))
-        values = np.array([target])
-        values =  Variable(torch.from_numpy(values)).to(device,dtype = torch.float32)
-        q = Variable(torch.from_numpy(q)).to(device,torch.float32)
-        
-        newx = newx.reshape(-1, 50)
-        values =values.reshape(-1, 50)
-        q = q.reshape(-1, 1)
-
-        Gamma_list.append(Gamma)
-        Velocity_list.append(Velocity)
-    
-        out, mu, sigma, latent_out = model(newx, q[j], 1)
-        out = out.cpu()
-        out = out.detach().numpy()
-
-        # print(latent_out)
-        
-        output[j] = out[0][0]
-
-        latent_out_1.append(latent_out[0][0].item())
-        latent_out_2.append(latent_out[0][1].item())
-        latent_out_3.append(latent_out[0][2].item())
-        k_values.append(Gamma)
-        w_values.append(Omega)
-        
-        q = q.cpu().detach().numpy()
-      
     # LATENT_OUT_1
     plt.clf
     plt.cla
     # Plot the surface.
+    X, Y = np.meshgrid(k_values,w_values)
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
     # Customize the z axis.
-    ax.scatter3D(latent_out_1, k_values, w_values, color = "green")
-    plt.title("simple 3D scatter plot")
+    ax.plot_surface(X, Y, latent_out_1)
+    plt.title("Latent 1")
     plt.show()
 
-     # LATENT_OUT_2
+    # LATENT_OUT_2
     plt.clf
     plt.cla
     # Plot the surface.
+    X, Y = np.meshgrid(k_values,w_values)
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
     # Customize the z axis.
-    ax.scatter3D(latent_out_2, k_values, w_values, color = "green")
-    plt.title("simple 3D scatter plot")
+    ax.plot_surface(X, Y, latent_out_2)
+    plt.title("Latent 2")
     plt.show()
 
-   # LATENT_OUT_3
+    # LATENT_OUT_3
     plt.clf
     plt.cla
     # Plot the surface.
+    X, Y = np.meshgrid(k_values,w_values)
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
     # Customize the z axis.
-    ax.scatter3D(latent_out_3, k_values, w_values, color = "green")
-    plt.title("simple 3D scatter plot")
+    ax.plot_surface(X, Y, latent_out_3)
+    plt.title("Latent 3")
     plt.show()
+
 
 
 if __name__ == '__main__':
