@@ -160,23 +160,28 @@ def test(model, test_set):
 def main():
     
       
+<<<<<<< HEAD
     samples = 950
+=======
+    samples = 100000
+>>>>>>> 69574b795c6a67a18fd34a36d16dd163c3dee5a8
     n_observation= 10
     n_questions = 10
-    test_samples= 50
+    test_samples= 5000
     a, b, c = create_data(1, n_observation, n_questions, samples)
     
+    #train_set =a[:,:-test_samples]
     
-
-    observations = a[0]
-    question =a[1]
-    target = a[2]
+    observations = a[0][test_samples:]
+    question =a[1][test_samples:]
+    target = a[2][test_samples:]
     
     
     a, b, c = create_data(1, n_observation, n_questions, test_samples)
     
-    test_set = a
-    
+    test_set = (a[0][:test_samples],a[1][:test_samples], a[2][:test_samples])
+                    
+        
     #Import HyperParams from json
     with open('params.json') as json_data:
       d = json.load(json_data)
