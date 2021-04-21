@@ -159,12 +159,7 @@ def test(model, test_set):
 
 def main():
     
-      
-<<<<<<< HEAD
-    samples = 950
-=======
     samples = 100000
->>>>>>> 69574b795c6a67a18fd34a36d16dd163c3dee5a8
     n_observation= 10
     n_questions = 10
     test_samples= 5000
