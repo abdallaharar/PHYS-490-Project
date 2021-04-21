@@ -1,16 +1,17 @@
-import json, argparse, torch, sys
+import json, argparse, torch, sys, pathlib, random
 import torch.optim as optim
-from torch.autograd import Variable
 import torch.nn.functional as func
 import matplotlib.pyplot as plt
 import seaborn as sns
 import torch.nn as nn
 import numpy as np
-import random
+from torch.autograd import Variable
+from pathlib import Path
 
+PATH = Path(__file__).parent
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device( 'cpu')
 
 sys.path.append('..//SciNet')
 from SciNet_Module import SciNet
@@ -61,7 +62,9 @@ def train(net, epoch, learning_rate, beta, data, question, target, err,batch=0):
                 batch_q = q[indices]
                 
                 out, mu, sigma = net(batch_x,batch_q)
-                
+                # if j % 1000 == 0 and i % 1000 == 0:
+                #   print("mu:",mu)
+                #   print("sigma:",sigma)
                 Mseloss, kldloss = loss_BVAE(out, batch_target, mu, sigma)
                 
                 optimizer.zero_grad()
@@ -81,11 +84,11 @@ def train(net, epoch, learning_rate, beta, data, question, target, err,batch=0):
                 optimizer.step()
                 
             if (j + 1) % 50 == 0:
-                print(j)
+                # print(j)
                 #print(kldloss)
                 #print(Mseloss)
-                print(tot_loss)
-                err.append(tot_loss)
+                # print(tot_loss)
+                err.append(tot_loss.item())
         
         
         
@@ -157,7 +160,7 @@ def test(model, test_set):
 def main():
     
       
-    samples = 95
+    samples = 950
     n_observation= 10
     n_questions = 10
     test_samples= 50
@@ -183,7 +186,7 @@ def main():
     num_epochs1 = d['num epochs1']
     mum_epochs2 = d['num epochs2']
     beta = d['beta']
-    latent_max = d['latent max']
+    latent_max = d['latent max']+1
     
     error = np.zeros(latent_max)
     for k in range(latent_max):
@@ -207,14 +210,29 @@ def main():
         plt.clf
         plt.cla
         x_list = [i for i in range(0,len(err))]
+        print(x_list)
+        print(err)
         plt.plot(x_list,err)
-        plt.show()
+        plt_name = "%i_latent.png" % k
+        plt_path = PATH / "plots" / plt_name
+        Path.mkdir(plt_path.parent, exist_ok=True)
+        plt.savefig(plt_path)
+        plt.close()
+
+        # Save model
+        model_name = "%i_latent.pt" % k
+        model_path = PATH / "models" / model_name
+        Path.mkdir(model_path.parent, exist_ok=True)
+        torch.save(model.state_dict(), model_path)
+
         
      
         error[k] = test(model, test_set)
 
     
     plt.bar(np.arange(0,latent_max),error, color ='maroon', width = 0.4)
+    plt_path = PATH / "plots" / "final_bar.png"
+    plt.savefig(plt_path)
     plt.show()
     
     #validating data
