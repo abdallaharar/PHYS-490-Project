@@ -1,4 +1,4 @@
-import json, argparse, torch, sys, pathlib, random
+import json, argparse, torch, sys, pathlib, random, pickle
 import torch.optim as optim
 import torch.nn.functional as func
 import matplotlib.pyplot as plt
@@ -164,16 +164,17 @@ def main():
     n_questions = 10
     test_samples= 5000
     a, b, c = create_data(1, n_observation, n_questions, samples)
-    
+
     #train_set =a[:,:-test_samples]
     
     observations = a[0][test_samples:]
     question =a[1][test_samples:]
     target = a[2][test_samples:]
     
-    
-    a, b, c = create_data(1, n_observation, n_questions, test_samples)
-    
+    dataset_path = PATH / "data" / "dataset.pk1"
+    Path.mkdir(dataset_path.parent, exist_ok=True)
+    with open(dataset_path,'wb') as f: pickle.dump(a, f)
+
     test_set = (a[0][:test_samples],a[1][:test_samples], a[2][:test_samples])
                     
         
