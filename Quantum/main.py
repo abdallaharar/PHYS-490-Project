@@ -163,7 +163,7 @@ def main():
     n_observation= 10
     n_questions = 10
     test_samples= 5000
-    a, b, c = create_data(1, n_observation, n_questions, samples)
+    a, b, c = create_data(1, n_observation, n_questions, samples, incomplete_tomography=[2,False])
 
     #train_set =a[:,:-test_samples]
     
