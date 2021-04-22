@@ -190,29 +190,171 @@ def plot_paper_results():
     plt.legend((p1[0],p2[0]),("Tom. complete", "Tom. incomplete"))
     plt.show()
 
+def run_all_scenarios():
+  #init
+  samples = 100000
+  n_observation= 10
+  n_questions = 10
+  test_samples= 5000
+  scenario = "one qubit complete"
+  n_qubits = 1
+  incomplete_tomography=[False,False]
+  path = PATH / "1 qubit" / "complete"
+  latent_max = 6
+  
+  for i in range(5):
+    if i == 0:
+      samples = 100000
+      n_observation = 10
+      n_questions = 10
+      test_samples = 5000
+      scenario = "one qubit complete"
+      n_qubits = 1
+      incomplete_tomography = [False, False]
+      path = PATH / "1 qubit" / "complete"
+      latent_max = 6
+    elif i == 1: 
+      samples = 100000
+      n_observation = 10
+      n_questions = 10
+      test_samples = 5000
+      scenario = "one qubit incomplete"
+      n_qubits = 1
+      incomplete_tomography=[2,False]
+      path = PATH / "1 qubit" / "incomplete"
+      latent_max = 6
+    elif i == 2:
+      samples = 500000
+      n_observation = 30
+      n_questions = 30
+      test_samples = 10000
+      scenario = "two qubit complete"
+      n_qubits = 2
+      incomplete_tomography=[False,False]
+      path = PATH / "2 qubit" / "complete"
+      latent_max = 10
+    elif i == 3:
+      samples = 500000
+      n_observation = 30
+      n_questions = 30
+      test_samples = 10000
+      scenario = "two qubit 2-dim subspace"
+      n_qubits = 2
+      incomplete_tomography=[2,False]
+      path = PATH / "2 qubit" / "2 dim"
+      latent_max = 10
+    elif i == 4:
+      samples = 500000
+      n_observation = 30
+      n_questions = 30
+      test_samples = 10000
+      scenario = "two qubit 3-dim subspace"
+      n_qubits = 2
+      incomplete_tomography=[3,False]
+      path = PATH / "2 qubit" / "3 dim"
+      latent_max = 10
 
+    print("Generating dataset for", scenario, "with", samples, "samples")
+    a, b, c = create_data(n_qubits, n_observation, n_questions, samples, incomplete_tomography=incomplete_tomography)
+    Path.mkdir(path, exist_ok=True)
+    dataset_path = path / "dataset.pk1"
+    print("Saving dataset to", str(dataset_path))
+    with open(dataset_path,'wb') as f: pickle.dump(a, f)
+    
+    observations = a[0][test_samples:]
+    question =a[1][test_samples:]
+    target = a[2][test_samples:]
+    test_set = (a[0][:test_samples],a[1][:test_samples], a[2][:test_samples])
+                    
+    #Import HyperParams from json
+    with open(PATH / 'params.json') as json_data:
+      d = json.load(json_data)
+      json_data.close()
+    learning_rate1 = d['learning rate1']
+    learning_rate2 = d['learning rate2']
+    num_epochs1 = d['num epochs1']
+    num_epochs2 = d['num epochs2']
+    beta = d['beta']
+
+    
+    error = np.zeros(latent_max)
+    for k in range(latent_max):
+    
+        n_latent = k
+        print("Training model for", scenario, "with", n_latent, "latent nuerons")
+        #Initializing the network
+        model = SciNet(observation_size=n_observation, encode_h1=100, encode_h2=100, 
+                    decoder_input=(n_questions+n_latent), decode_h1=100, decode_h2=100, 
+                    output_size=1,n_latent_var=n_latent).to(device)
+        
+        err = []
+        train(model, num_epochs1, learning_rate1, beta, observations, question,
+              target, err, 512)
+        train(model, num_epochs2, learning_rate2, beta, observations, question,
+              target, err, 512)
+        plt.clf
+        plt.cla
+        x_list = [u for u in range(0,len(err))]
+        print(x_list)
+        print(err)
+        plt.plot(x_list,err)
+        print("Plotting training error for " + scenario + " with " + str(k) + " latent neurons")
+        plt.title("Training error for " + scenario + " with " + str(k) + " latent neurons")
+        plt.xlabel("Epochs")
+        plt.ylabel("Error")
+        plt_name = "%i_latent.png" % k
+        plt_path = path / "plots" / plt_name
+        Path.mkdir(plt_path.parent, exist_ok=True)
+        plt.savefig(plt_path)
+        plt.close()
+
+        # Save model
+        model_name = "%i_latent.pt" % k
+        model_path = path / "models" / model_name
+        Path.mkdir(model_path.parent, exist_ok=True)
+        torch.save(model.state_dict(), model_path)
+
+        print("Testing model for", scenario, "with", n_latent, "latent nuerons")
+        error[k] = test(model, test_set)
+        print("Error", error[k])
+
+    plt.bar(np.arange(0,latent_max), np.sqrt(error), color ='maroon', width = 0.4)
+    plt_path = path / "plots" / "final_bar.png"
+    print("Saving bar plot for", scenario, "at", plt_path)
+    plt.savefig(plt_path)
+    # plt.show()
+    
 
 def main():
     # uncomment to generate report plot
-    plot_paper_results()
-    return()
+    # plot_paper_results()
+    # return()
+
+    # uncomment to run for all scenarios
+    # run_all_scenarios()
+    # return
     
     samples = 100000
     n_observation= 10
     n_questions = 10
     test_samples= 5000
-    a, b, c = create_data(1, n_observation, n_questions, samples, incomplete_tomography=[2,False])
+    regenerate = True
 
-    #train_set =a[:,:-test_samples]
-    
+    a = []
+    dataset_path = PATH / "data" / "dataset.pk1"
+    if regenerate:
+      print("Generating dataset with",samples,"samples")
+      a, b, c = create_data(1, n_observation, n_questions, samples, incomplete_tomography=[False,False])
+      Path.mkdir(dataset_path.parent, exist_ok=True)
+      with open(dataset_path,'wb') as f: pickle.dump(a, f)
+    else:
+      print("Loading pre-generated dataset")
+      with open(dataset_path,'rb') as f: a = pickle.load(f)
+
+        
     observations = a[0][test_samples:]
     question =a[1][test_samples:]
     target = a[2][test_samples:]
-    
-    dataset_path = PATH / "data" / "dataset.pk1"
-    Path.mkdir(dataset_path.parent, exist_ok=True)
-    with open(dataset_path,'wb') as f: pickle.dump(a, f)
-
     test_set = (a[0][:test_samples],a[1][:test_samples], a[2][:test_samples])
                     
         
@@ -227,52 +369,46 @@ def main():
     beta = d['beta']
     latent_max = d['latent max']+1
     
+    print("Training...")
     error = np.zeros(latent_max)
     for k in range(latent_max):
-    
-        n_latent = k
-        #Specifies to run on GPU if possible
-        #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        #device = torch.device('cpu')
-        #Initializing the network
-        model = SciNet(observation_size=n_observation, encode_h1=100, encode_h2=100, 
-                    decoder_input=(n_questions+n_latent), decode_h1=100, decode_h2=100, 
-                    output_size=1,n_latent_var=n_latent).to(device)
-        
-        #Loss and optimizer
-        #loss = loss_BVAE()
-        err = []
-        train(model, num_epochs1, learning_rate1, beta, observations, question,
-              target, err, 512)
-        train(model, num_epochs2,learning_rate2, beta, observations, question,
-              target,err, 512)
-        plt.clf
-        plt.cla
-        x_list = [i for i in range(0,len(err))]
-        print(x_list)
-        print(err)
-        plt.plot(x_list,err)
-        plt.title("Training error with %i latent neurons" % k)
-        plt.xlabel("Epochs")
-        plt.ylabel("Error")
-        plt_name = "%i_latent.png" % k
-        plt_path = PATH / "plots" / plt_name
-        Path.mkdir(plt_path.parent, exist_ok=True)
-        plt.savefig(plt_path)
-        plt.close()
+      print("Training with", k, "latent neurons")
+      n_latent = k
+      #Initializing the network
+      model = SciNet(observation_size=n_observation, encode_h1=100, encode_h2=100, 
+                  decoder_input=(n_questions+n_latent), decode_h1=100, decode_h2=100, 
+                  output_size=1,n_latent_var=n_latent).to(device)
+      
+      #Loss and optimizer
+      err = []
+      train(model, num_epochs1, learning_rate1, beta, observations, question,
+            target, err, 512)
+      train(model, num_epochs2,learning_rate2, beta, observations, question,
+            target,err, 512)
+      plt.clf
+      plt.cla
+      x_list = [i for i in range(0,len(err))]
+      print(x_list)
+      print(err)
+      plt.plot(x_list,err)
+      plt.title("Training error with %i latent neurons" % k)
+      plt.xlabel("Epochs")
+      plt.ylabel("Error")
+      plt_name = "%i_latent.png" % k
+      plt_path = PATH / "plots" / plt_name
+      Path.mkdir(plt_path.parent, exist_ok=True)
+      plt.savefig(plt_path)
+      plt.close()
 
-        # Save model
-        model_name = "%i_latent.pt" % k
-        model_path = PATH / "models" / model_name
-        Path.mkdir(model_path.parent, exist_ok=True)
-        torch.save(model.state_dict(), model_path)
+      # Save model
+      model_name = "%i_latent.pt" % k
+      model_path = PATH / "models" / model_name
+      Path.mkdir(model_path.parent, exist_ok=True)
+      torch.save(model.state_dict(), model_path)
 
-        
-     
-        error[k] = test(model, test_set)
+      error[k] = test(model, test_set)
 
-    
-    plt.bar(np.arange(0,latent_max),error, color ='maroon', width = 0.4)
+    plt.bar(np.arange(0, latent_max), np.sqrt(error), color='maroon', width = 0.4)
     plt_path = PATH / "plots" / "final_bar.png"
     plt.savefig(plt_path)
     plt.show()
