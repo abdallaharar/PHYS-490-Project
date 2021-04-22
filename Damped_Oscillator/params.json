@@ -1,10 +1,5 @@
 {
-  "model":{
-    "learning rate": 0.01,
-    "num epochs": 420,
-
-  },
-  "data":{
-    
-  }
+    "learning rate": 1e-3,
+    "num epochs": 10,
+    "beta": 1e-3
 }

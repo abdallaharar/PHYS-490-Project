@@ -5,7 +5,7 @@
     "num epochs1": 250,
     "num epochs2": 50,
     "beta": 1e-4,
-    "latent max": 9
+    "latent max": 5
     
 
 }
