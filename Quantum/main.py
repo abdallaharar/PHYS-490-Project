@@ -18,6 +18,7 @@ from SciNet_Module import SciNet
 
 from generator import create_data
 
+
 def kl_div(mu, sigma):
     
  
@@ -83,7 +84,7 @@ def train(net, epoch, learning_rate, beta, data, question, target, err,batch=0):
                 #torch.nn.utils.clip_grad_value_(net.parameters(), 10)
                 optimizer.step()
                 
-            if (j + 1) % 50 == 0:
+            if (j + 1) % 1 == 0:
                 # print(j)
                 #print(kldloss)
                 #print(Mseloss)
@@ -154,10 +155,75 @@ def test(model, test_set):
     return Mseloss
     
     
+def plot_paper_results():
+    samples = 100000
+    n_observation= 10
+    n_questions = 10
+    test_samples= 5000
+
+    # load saved datasets
+    print("loading pre-generated datasets")
+    compl_dataset_path = PATH / "complete" / "data" / "dataset.pk1"
+    with open(compl_dataset_path,'rb') as f: a = pickle.load(f)
+    compl_set_test = (a[0][:test_samples],a[1][:test_samples], a[2][:test_samples])
+
+    incompl_dataset_path = PATH / "incomplete" / "data" / "dataset.pk1"
+    with open(incompl_dataset_path,'rb') as f: a = pickle.load(f)
+    incompl_set_test = (a[0][:test_samples],a[1][:test_samples], a[2][:test_samples])
     
+    #Import HyperParams from json
+    with open('params.json') as json_data:
+      d = json.load(json_data)
+      json_data.close()
+    learning_rate = d['learning rate1']
+    learning_rate2 = d['learning rate2']
+    num_epochs1 = d['num epochs1']
+    mum_epochs2 = d['num epochs2']
+    beta = d['beta']
+    latent_max = d['latent max']+1
+
+    # plot complete tomography
+    print("loading pre-trained models")
+    error_c = np.zeros(latent_max)
+    for k in range(latent_max):
+      n_latent = k
+      model = SciNet(observation_size=n_observation, encode_h1=100, encode_h2=100, 
+                  decoder_input=(n_questions+n_latent), decode_h1=100, decode_h2=100, 
+                  output_size=1,n_latent_var=n_latent).to(device)
+      model_name = "%i_latent.pt" % k
+      model_path = PATH / "complete" / "models" / model_name
+      model.load_state_dict(torch.load(model_path))
+      model.eval()
+      error_c[k] = test(model, compl_set_test)
+    # plt.bar(np.arange(0,latent_max),error, color ='blue', width = 0.4)
+
+    # plot incomplete tomography
+    error_i = np.zeros(latent_max)
+    for k in range(latent_max):
+      n_latent = k
+      model = SciNet(observation_size=n_observation, encode_h1=100, encode_h2=100, 
+                  decoder_input=(n_questions+n_latent), decode_h1=100, decode_h2=100, 
+                  output_size=1,n_latent_var=n_latent).to(device)
+      model_name = "%i_latent.pt" % k
+      model_path = PATH / "incomplete" / "models" / model_name
+      model.load_state_dict(torch.load(model_path))
+      model.eval()
+      error_i[k] = test(model, incompl_set_test)
+    
+    p1 = plt.bar(np.arange(0,latent_max),np.sqrt(error_c), color ='blue', width = 0.8,align = "center")
+    p2 = plt.bar(np.arange(0,latent_max),np.sqrt(error_i), color ='orange', width = 0.4, align = "edge")
+    plt.ylabel("Error")
+    plt.title("One qubit.")
+    plt.xlabel("Number of latent neurons")
+    plt.legend((p1[0],p2[0]),("Tom. complete", "Tom. incomplete"))
+    plt.show()
+
 
 
 def main():
+    # uncomment to generate report plot
+    plot_paper_results()
+    return()
     
     samples = 100000
     n_observation= 10
@@ -214,6 +280,9 @@ def main():
         print(x_list)
         print(err)
         plt.plot(x_list,err)
+        plt.title("Training error with %i latent neurons" % k)
+        plt.xlabel("Epochs")
+        plt.ylabel("Error")
         plt_name = "%i_latent.png" % k
         plt_path = PATH / "plots" / plt_name
         Path.mkdir(plt_path.parent, exist_ok=True)
