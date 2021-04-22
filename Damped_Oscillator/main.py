@@ -86,7 +86,7 @@ def train(net, epoch, learning_rate, beta, data, question, target, batch = 0):
 
 def main():
   #95k comes from paper
-    samples = 100
+    samples = 95000
     data = np.zeros((50, samples))
     q = np.zeros(samples)
     target = np.zeros(samples)
@@ -128,7 +128,7 @@ def main():
     plt.plot(x_list,y_list)
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title("loss")
+    plt.title("Loss over training")
     plt.show()
     
     #set up parameters for data testing
@@ -168,6 +168,8 @@ def main():
       plt.title("Output Confirmation Plot")
       plt.plot(damped_oscillator.x_points,damped_oscillator.y_points, color = 'blue')
       plt.plot(q,output, 'r--')
+      plt.xlabel("Time")
+      plt.ylabel("Spring Displacement")
       plt.show()
 
     #sets up scatter plot
@@ -214,11 +216,11 @@ def main():
     ax = fig.gca(projection='3d')
     ax.set_xlabel('${b \ [kg/s]}$')
     ax.set_ylabel('${k \ [kg/s^{2}]}$')
-    ax.set_zlabel('latent variable')
+    ax.set_zlabel('latent activation 1')
 
     # Customize the z axis.
     ax.plot_surface(X, Y, latent_out_1,cmap='inferno')
-    plt.title("Latent 1")
+    plt.title("Latent Variable 1")
     plt.show()
 
     # LATENT_OUT_2
@@ -230,11 +232,11 @@ def main():
     ax = fig.gca(projection='3d')
     ax.set_xlabel('${b \ [kg/s]}$')
     ax.set_ylabel('${k \ [kg/s^{2}]}$')
-    ax.set_zlabel('latent variable')
+    ax.set_zlabel('latent activation 2')
 
     # Customize the z axis.
     ax.plot_surface(X, Y, latent_out_2, cmap='inferno')
-    plt.title("Latent 2")
+    plt.title("Latent Variable 2")
     plt.show()
 
     # LATENT_OUT_3
@@ -246,11 +248,11 @@ def main():
     ax = fig.gca(projection='3d')
     ax.set_xlabel('${b \ [kg/s]}$')
     ax.set_ylabel('${k \ [kg/s^{2}]}$')
-    ax.set_zlabel('latent variable')
+    ax.set_zlabel('latent activation 3')
 
     # Customize the z axis.
     ax.plot_surface(X, Y, latent_out_3, cmap='inferno')
-    plt.title("Latent 3")
+    plt.title("Latent Variable 3")
     plt.show()
 
 if __name__ == '__main__':
